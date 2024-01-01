@@ -19,8 +19,8 @@ import (
 	uuid "github.com/gofrs/uuid"
 	qrcode "github.com/skip2/go-qrcode"
 
-	ds "github.com/bbernhard/signal-cli-rest-api/datastructs"
-	utils "github.com/bbernhard/signal-cli-rest-api/utils"
+	ds "github.com/paprickar/signal-cli-rest-api/datastructs"
+	utils "github.com/paprickar/signal-cli-rest-api/utils"
 )
 
 const groupPrefix = "group."

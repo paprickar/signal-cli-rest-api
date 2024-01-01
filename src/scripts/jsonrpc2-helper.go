@@ -1,12 +1,15 @@
 package main
 
 import (
+	"fmt"
+	"io/ioutil"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"syscall"
 
-	"github.com/bbernhard/signal-cli-rest-api/utils"
+	"github.com/paprickar/signal-cli-rest-api/utils"
 	log "github.com/sirupsen/logrus"
 )
 
