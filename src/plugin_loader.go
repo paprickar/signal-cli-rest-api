@@ -3,12 +3,13 @@ package main
 import (
 	"errors"
 	"io"
+
 	"net/http"
 	"strings"
 
 	gluasql "github.com/bbernhard/gluasql"
-	"github.com/bbernhard/signal-cli-rest-api/api"
-	"github.com/bbernhard/signal-cli-rest-api/utils"
+	"github.com/paprickar/signal-cli-rest-api/utils"
+	"github.com/paprickar/signal-cli-rest-api/api"
 	"github.com/cjoudrey/gluahttp"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
