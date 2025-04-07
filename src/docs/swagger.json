@@ -1,12 +1,15 @@
 {
+    "schemes": [
+        "http"
+    ],
     "swagger": "2.0",
     "info": {
         "description": "This is the Signal Cli REST API documentation.",
         "title": "Signal Cli REST API",
         "contact": {},
-        "license": {},
         "version": "1.0"
     },
+    "host": "localhost:8080",
     "basePath": "/",
     "paths": {
         "/v1/about": {
@@ -58,6 +61,77 @@
                 }
             }
         },
+        "/v1/accounts/{number}/pin": {
+            "post": {
+                "description": "Sets a new Signal Pin",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Accounts"
+                ],
+                "summary": "Set Pin",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Registered Phone Number",
+                        "name": "number",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.SetPinRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Removes a Signal Pin",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Accounts"
+                ],
+                "summary": "Remove Pin",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Registered Phone Number",
+                        "name": "number",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/accounts/{number}/rate-limit-challenge": {
             "post": {
                 "description": "When running into rate limits, sometimes the limit can be lifted, by solving a CAPTCHA. To get the captcha token, go to https://signalcaptchas.org/challenge/generate.html For the staging environment, use: https://signalcaptchas.org/staging/registration/generate.html. The \"challenge_token\" is the token from the failed send attempt. The \"captcha\" is the captcha result, starting with signalcaptcha://",
@@ -90,7 +164,9 @@
                     }
                 ],
                 "responses": {
-                    "204": {},
+                    "204": {
+                        "description": "No Content"
+                    },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
@@ -132,7 +208,9 @@
                     }
                 ],
                 "responses": {
-                    "204": {},
+                    "204": {
+                        "description": "No Content"
+                    },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
@@ -180,7 +258,9 @@
                             "$ref": "#/definitions/client.SetUsernameResponse"
                         }
                     },
-                    "204": {},
+                    "204": {
+                        "description": "No Content"
+                    },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
@@ -211,7 +291,9 @@
                     }
                 ],
                 "responses": {
-                    "204": {},
+                    "204": {
+                        "description": "No Content"
+                    },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
@@ -417,7 +499,9 @@
                     }
                 ],
                 "responses": {
-                    "200": {},
+                    "200": {
+                        "description": "OK"
+                    },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
@@ -457,7 +541,9 @@
                     }
                 ],
                 "responses": {
-                    "204": {},
+                    "204": {
+                        "description": "No Content"
+                    },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
@@ -529,7 +615,9 @@
                     }
                 ],
                 "responses": {
-                    "204": {},
+                    "204": {
+                        "description": "No Content"
+                    },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
@@ -562,7 +650,9 @@
                     }
                 ],
                 "responses": {
-                    "204": {},
+                    "204": {
+                        "description": "No Content"
+                    },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
@@ -573,6 +663,45 @@
             }
         },
         "/v1/devices/{number}": {
+            "get": {
+                "description": "List linked devices associated to this device.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Devices"
+                ],
+                "summary": "List linked devices.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Registered Phone Number",
+                        "name": "number",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/client.ListDevicesResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Links another device to this device. Only works, if this is the master device.",
                 "consumes": [
@@ -604,7 +733,9 @@
                     }
                 ],
                 "responses": {
-                    "204": {},
+                    "204": {
+                        "description": "No Content"
+                    },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
@@ -869,6 +1000,13 @@
                         "name": "number",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Group ID",
+                        "name": "groupid",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -912,6 +1050,13 @@
                         "type": "string",
                         "description": "Registered Phone Number",
                         "name": "number",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Group ID",
+                        "name": "groupid",
                         "in": "path",
                         "required": true
                     }
@@ -1051,6 +1196,13 @@
                         "name": "number",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Group ID",
+                        "name": "groupid",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1094,6 +1246,13 @@
                         "type": "string",
                         "description": "Registered Phone Number",
                         "name": "number",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Group ID",
+                        "name": "groupid",
                         "in": "path",
                         "required": true
                     }
@@ -1363,6 +1522,13 @@
                         "schema": {
                             "$ref": "#/definitions/api.Reaction"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Registered phone number",
+                        "name": "number",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1401,6 +1567,13 @@
                         "schema": {
                             "$ref": "#/definitions/api.Reaction"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Registered phone number",
+                        "name": "number",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1441,6 +1614,13 @@
                         "schema": {
                             "$ref": "#/definitions/api.Receipt"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Registered phone number",
+                        "name": "number",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1561,7 +1741,9 @@
                     }
                 ],
                 "responses": {
-                    "201": {},
+                    "201": {
+                        "description": "Created"
+                    },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
@@ -1624,7 +1806,7 @@
                 }
             }
         },
-        "/v1/search": {
+        "/v1/search/{number}": {
             "get": {
                 "description": "Check if one or more phone numbers are registered with the Signal Service.",
                 "consumes": [
@@ -1642,7 +1824,8 @@
                         "type": "string",
                         "description": "Registered Phone Number",
                         "name": "number",
-                        "in": "path"
+                        "in": "path",
+                        "required": true
                     },
                     {
                         "type": "array",
@@ -1748,7 +1931,9 @@
                             }
                         }
                     },
-                    "204": {},
+                    "204": {
+                        "description": "No Content"
+                    },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
@@ -1788,7 +1973,9 @@
                     }
                 ],
                 "responses": {
-                    "204": {},
+                    "204": {
+                        "description": "No Content"
+                    },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
@@ -1921,7 +2108,9 @@
                     }
                 ],
                 "responses": {
-                    "204": {},
+                    "204": {
+                        "description": "No Content"
+                    },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
@@ -1933,7 +2122,7 @@
         },
         "/v2/send": {
             "post": {
-                "description": "Send a signal message. Set the text_mode to 'styled' in case you want to add formatting to your text message. Styling Options: *italic text*, **bold text**, ~strikethrough text~.",
+                "description": "Send a signal message. Set the text_mode to 'styled' in case you want to add formatting to your text message. Styling Options: \\*italic text\\*, \\*\\*bold text\\*\\*, ~strikethrough text~, ||spoiler||, \\`monospace\\`. If you want to escape a formatting character, prefix it with two backslashes.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2020,7 +2209,6 @@
             "type": "object",
             "properties": {
                 "logging": {
-                    "type": "object",
                     "$ref": "#/definitions/api.LoggingConfiguration"
                 }
             }
@@ -2030,6 +2218,9 @@
             "properties": {
                 "description": {
                     "type": "string"
+                },
+                "expiration_time": {
+                    "type": "integer"
                 },
                 "group_link": {
                     "type": "string",
@@ -2049,7 +2240,6 @@
                     "type": "string"
                 },
                 "permissions": {
-                    "type": "object",
                     "$ref": "#/definitions/api.GroupPermissions"
                 }
             }
@@ -2234,7 +2424,10 @@
                     "type": "integer"
                 },
                 "mentions": {
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/data.MessageMention"
+                    }
                 },
                 "message": {
                     "type": "string"
@@ -2249,7 +2442,10 @@
                     "type": "string"
                 },
                 "quote_mentions": {
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/data.MessageMention"
+                    }
                 },
                 "quote_message": {
                     "type": "string"
@@ -2272,6 +2468,14 @@
                         "normal",
                         "styled"
                     ]
+                }
+            }
+        },
+        "api.SetPinRequest": {
+            "type": "object",
+            "properties": {
+                "pin": {
+                    "type": "string"
                 }
             }
         },
@@ -2367,6 +2571,9 @@
                 "description": {
                     "type": "string"
                 },
+                "expiration_time": {
+                    "type": "integer"
+                },
                 "name": {
                     "type": "string"
                 }
@@ -2375,6 +2582,9 @@
         "api.UpdateProfileRequest": {
             "type": "object",
             "properties": {
+                "about": {
+                    "type": "string"
+                },
                 "base64_avatar": {
                     "type": "string"
                 },
@@ -2420,6 +2630,26 @@
                 }
             }
         },
+        "client.ContactProfile": {
+            "type": "object",
+            "properties": {
+                "about": {
+                    "type": "string"
+                },
+                "given_name": {
+                    "type": "string"
+                },
+                "has_avatar": {
+                    "type": "boolean"
+                },
+                "last_updated_timestamp": {
+                    "type": "integer"
+                },
+                "lastname": {
+                    "type": "string"
+                }
+            }
+        },
         "client.GroupEntry": {
             "type": "object",
             "properties": {
@@ -2431,6 +2661,9 @@
                 },
                 "blocked": {
                     "type": "boolean"
+                },
+                "description": {
+                    "type": "string"
                 },
                 "id": {
                     "type": "string"
@@ -2493,14 +2726,26 @@
                 "color": {
                     "type": "string"
                 },
+                "given_name": {
+                    "type": "string"
+                },
                 "message_expiration": {
                     "type": "string"
                 },
                 "name": {
                     "type": "string"
                 },
+                "nickname": {
+                    "$ref": "#/definitions/client.Nickname"
+                },
+                "note": {
+                    "type": "string"
+                },
                 "number": {
                     "type": "string"
+                },
+                "profile": {
+                    "$ref": "#/definitions/client.ContactProfile"
                 },
                 "profile_name": {
                     "type": "string"
@@ -2509,6 +2754,20 @@
                     "type": "string"
                 },
                 "uuid": {
+                    "type": "string"
+                }
+            }
+        },
+        "client.ListDevicesResponse": {
+            "type": "object",
+            "properties": {
+                "creation_timestamp": {
+                    "type": "integer"
+                },
+                "last_seen_timestamp": {
+                    "type": "integer"
+                },
+                "name": {
                     "type": "string"
                 }
             }
@@ -2533,6 +2792,20 @@
                 }
             }
         },
+        "client.Nickname": {
+            "type": "object",
+            "properties": {
+                "family_name": {
+                    "type": "string"
+                },
+                "given_name": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "client.SetUsernameResponse": {
             "type": "object",
             "properties": {
@@ -2541,6 +2814,20 @@
                 },
                 "username_link": {
                     "type": "string"
+                }
+            }
+        },
+        "data.MessageMention": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "type": "string"
+                },
+                "length": {
+                    "type": "integer"
+                },
+                "start": {
+                    "type": "integer"
                 }
             }
         }

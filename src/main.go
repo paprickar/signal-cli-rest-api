@@ -17,6 +17,11 @@ import (
 	log "github.com/sirupsen/logrus"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"strconv"
+	"plugin"
 )
 
 // @title Signal Cli REST API
@@ -59,14 +64,21 @@ import (
 // @tag.name Sticker Packs
 // @tag.description List and Install Sticker Packs
 
+// @host localhost:8080
+// @schemes http
 // @BasePath /
+
 func main() {
 	signalCliConfig := flag.String("signal-cli-config", "/home/.local/share/signal-cli/", "Config directory where signal-cli config is stored")
 	attachmentTmpDir := flag.String("attachment-tmp-dir", "/tmp/", "Attachment tmp directory")
 	avatarTmpDir := flag.String("avatar-tmp-dir", "/tmp/", "Avatar tmp directory")
 	flag.Parse()
 
-	docs.SwaggerInfo.Schemes = []string{"http", "https"}
+	if utils.GetEnv("SWAGGER_USE_HTTPS_AS_PREFERRED_SCHEME", "false") == "false" {
+		docs.SwaggerInfo.Schemes = []string{"http", "https"}
+	} else {
+		docs.SwaggerInfo.Schemes = []string{"https", "http"}
+	}
 
 	router := gin.New()
 	router.Use(gin.LoggerWithConfig(gin.LoggerConfig{
@@ -216,11 +228,14 @@ func main() {
 			accounts.PUT(":number/settings", api.UpdateAccountSettings)
 			accounts.POST(":number/username", api.SetUsername)
 			accounts.DELETE(":number/username", api.RemoveUsername)
+			accounts.POST(":number/pin", api.SetPin)
+			accounts.DELETE(":number/pin", api.RemovePin)
 		}
 
 		devices := v1.Group("devices")
 		{
 			devices.POST(":number", api.AddDevice)
+			devices.GET(":number", api.ListDevices)
 		}
 
 		attachments := v1.Group("attachments")
@@ -275,6 +290,45 @@ func main() {
 			contacts.GET(":number", api.ListContacts)
 			contacts.PUT(":number", api.UpdateContact)
 			contacts.POST(":number/sync", api.SendContacts)
+		}
+
+		if utils.GetEnv("ENABLE_PLUGINS", "false") == "true" {
+			signalCliRestApiPluginSharedObjDir := utils.GetEnv("SIGNAL_CLI_REST_API_PLUGIN_SHARED_OBJ_DIR", "")
+			sharedObj, err := plugin.Open(signalCliRestApiPluginSharedObjDir + "signal-cli-rest-api_plugin_loader.so")
+			if err != nil {
+				log.Fatal("Couldn't load shared object: ", err)
+			}
+
+			pluginHandlerSymbol, err := sharedObj.Lookup("PluginHandler")
+			if err != nil {
+				log.Fatal("Couldn't get PluginHandler: ", err)
+			}
+
+			pluginHandler, ok := pluginHandlerSymbol.(utils.PluginHandler)
+			if !ok {
+				log.Fatal("Couldn't cast PluginHandler")
+			}
+
+			plugins := v1.Group("/plugins")
+			{
+				pluginConfigs := utils.NewPluginConfigs()
+				err := pluginConfigs.Load("/plugins")
+				if err != nil {
+					log.Fatal("Couldn't load plugin configs: ", err.Error())
+				}
+
+				for _, pluginConfig := range pluginConfigs.Configs {
+					if pluginConfig.Method == "GET" {
+						plugins.GET(pluginConfig.Endpoint, pluginHandler.ExecutePlugin(pluginConfig))
+					} else if pluginConfig.Method == "POST" {
+						plugins.POST(pluginConfig.Endpoint, pluginHandler.ExecutePlugin(pluginConfig))
+					} else if pluginConfig.Method == "DELETE" {
+						plugins.DELETE(pluginConfig.Endpoint, pluginHandler.ExecutePlugin(pluginConfig))
+					} else if pluginConfig.Method == "PUT" {
+						plugins.PUT(pluginConfig.Endpoint, pluginHandler.ExecutePlugin(pluginConfig))
+					}
+				}
+			}
 		}
 	}
 

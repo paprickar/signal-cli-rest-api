@@ -1,13 +1,13 @@
-ARG SIGNAL_CLI_VERSION=0.13.5
-ARG LIBSIGNAL_CLIENT_VERSION=0.52.2
-ARG SIGNAL_CLI_NATIVE_PACKAGE_VERSION=0.13.5+1
+ARG SIGNAL_CLI_VERSION=0.13.13
+ARG LIBSIGNAL_CLIENT_VERSION=0.66.2
+ARG SIGNAL_CLI_NATIVE_PACKAGE_VERSION=0.13.13+morph027+1
 
-ARG SWAG_VERSION=1.6.7
+ARG SWAG_VERSION=1.7.1
 ARG GRAALVM_VERSION=21.0.0
 
 ARG BUILD_VERSION_ARG=unset
 
-FROM golang:1.22-bookworm AS buildcontainer
+FROM golang:1.23-bookworm AS buildcontainer
 
 ARG SIGNAL_CLI_VERSION
 ARG LIBSIGNAL_CLIENT_VERSION
@@ -136,12 +136,19 @@ COPY src/scripts /tmp/signal-cli-rest-api-src/scripts
 COPY src/main.go /tmp/signal-cli-rest-api-src/
 COPY src/go.mod /tmp/signal-cli-rest-api-src/
 COPY src/go.sum /tmp/signal-cli-rest-api-src/
+COPY src/plugin_loader.go /tmp/signal-cli-rest-api-src/
 
 # build signal-cli-rest-api
-RUN cd /tmp/signal-cli-rest-api-src && swag init && go test ./client -v && go build
+RUN ls -la /tmp/signal-cli-rest-api-src
+RUN cd /tmp/signal-cli-rest-api-src && swag init
+RUN cd /tmp/signal-cli-rest-api-src && go build -o signal-cli-rest-api main.go
+RUN cd /tmp/signal-cli-rest-api-src && go test ./client -v
 
 # build supervisorctl_config_creator
 RUN cd /tmp/signal-cli-rest-api-src/scripts && go build -o jsonrpc2-helper 
+
+# build plugin_loader
+RUN cd /tmp/signal-cli-rest-api-src && go build -buildmode=plugin -o signal-cli-rest-api_plugin_loader.so plugin_loader.go
 
 # Start a fresh container for release container
 
@@ -159,16 +166,18 @@ ARG SIGNAL_CLI_VERSION
 ARG BUILD_VERSION_ARG
 
 ENV BUILD_VERSION=$BUILD_VERSION_ARG
+ENV SIGNAL_CLI_REST_API_PLUGIN_SHARED_OBJ_DIR=/usr/bin/
 
 RUN dpkg-reconfigure debconf --frontend=noninteractive \
 	&& apt-get -qq update \
-	&& apt-get -qq install -y --no-install-recommends util-linux supervisor netcat openjdk-21-jre curl < /dev/null > /dev/null \
+	&& apt-get -qq install -y --no-install-recommends util-linux supervisor netcat openjdk-21-jre curl locales < /dev/null > /dev/null \
 	&& rm -rf /var/lib/apt/lists/* 
 
 COPY --from=buildcontainer /tmp/signal-cli-rest-api-src/signal-cli-rest-api /usr/bin/signal-cli-rest-api
 COPY --from=buildcontainer /opt/signal-cli-${SIGNAL_CLI_VERSION} /opt/signal-cli-${SIGNAL_CLI_VERSION}
 COPY --from=buildcontainer /tmp/signal-cli-${SIGNAL_CLI_VERSION}-source/build/native/nativeCompile/signal-cli /opt/signal-cli-${SIGNAL_CLI_VERSION}/bin/signal-cli-native
 COPY --from=buildcontainer /tmp/signal-cli-rest-api-src/scripts/jsonrpc2-helper /usr/bin/jsonrpc2-helper
+COPY --from=buildcontainer /tmp/signal-cli-rest-api-src/signal-cli-rest-api_plugin_loader.so /usr/bin/signal-cli-rest-api_plugin_loader.so
 COPY entrypoint.sh /entrypoint.sh
 
 
@@ -184,6 +193,12 @@ RUN arch="$(uname -m)"; \
         case "$arch" in \
             armv7l) echo "GRAALVM doesn't support 32bit" && rm /opt/signal-cli-${SIGNAL_CLI_VERSION}/bin/signal-cli-native /usr/bin/signal-cli-native  ;; \
         esac;
+
+RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
+    dpkg-reconfigure --frontend=noninteractive locales && \
+    update-locale LANG=en_US.UTF-8
+
+ENV LANG en_US.UTF-8
 
 EXPOSE ${PORT}
 

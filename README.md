@@ -125,6 +125,10 @@ The Swagger API documentation can be found [here](https://bbernhard.github.io/si
 
 In case you need more functionality, please **file a ticket** or **create a PR**.
 
+## Plugins
+
+The plugin mechanism allows to register custom endpoints (with different payloads) without forking the project. Have a look [here](https://github.com/bbernhard/signal-cli-rest-api/tree/master/plugins) for details.
+
 ## Advanced Settings
 There are a bunch of environmental variables that can be set inside the docker container in order to change some technical details. This settings are meant for developers and advanced users. Usually you do *not* need to change anything here - the default values are perfectly fine!
 
@@ -138,4 +142,8 @@ There are a bunch of environmental variables that can be set inside the docker c
 
 * `SWAGGER_IP`: The IP that's used in the Swagger UI for the interactive examples. Defaults to the container ip.
 
+* `SWAGGER_USE_HTTPS_AS_PREFERRED_SCHEME`: Use the HTTPS Scheme as preferred scheme in the Swagger UI.
+
 * `PORT`: Defaults to port `8080` unless this env var is set to tell it otherwise.
+
+* `DEFAULT_SIGNAL_TEXT_MODE`: Allows to set the default text mode that should be used when sending a message (supported values: `normal`, `styled`). The setting is only used in case the `text_mode` is not explicitly set in the payload of the `send` method.
