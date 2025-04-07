@@ -8,8 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"io"
 	log "github.com/sirupsen/logrus"
-	"github.com/bbernhard/signal-cli-rest-api/utils"
-	"github.com/bbernhard/signal-cli-rest-api/api"
+	"github.com/paprickar/signal-cli-rest-api/utils"
+	"github.com/paprickar/signal-cli-rest-api/api"
 	"strings"
 	"net/http"
 )
