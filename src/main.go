@@ -17,10 +17,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"strconv"
 	"plugin"
 )
 
