@@ -1,13 +1,13 @@
-ARG SIGNAL_CLI_VERSION=0.13.13
-ARG LIBSIGNAL_CLIENT_VERSION=0.66.2
-ARG SIGNAL_CLI_NATIVE_PACKAGE_VERSION=0.13.13+morph027+1
+ARG SIGNAL_CLI_VERSION=0.13.14
+ARG LIBSIGNAL_CLIENT_VERSION=0.68.1
+ARG SIGNAL_CLI_NATIVE_PACKAGE_VERSION=0.13.14+morph027+1
 
-ARG SWAG_VERSION=1.7.1
+ARG SWAG_VERSION=1.16.4
 ARG GRAALVM_VERSION=21.0.0
 
 ARG BUILD_VERSION_ARG=unset
 
-FROM golang:1.23-bookworm AS buildcontainer
+FROM golang:1.24-bookworm AS buildcontainer
 
 ARG SIGNAL_CLI_VERSION
 ARG LIBSIGNAL_CLIENT_VERSION
@@ -44,13 +44,17 @@ ENV JAVA_OPTS="-Djdk.lang.Process.launchMechanism=vfork"
 
 ENV LANG en_US.UTF-8
 
-RUN cd /tmp/ \
-	&& git clone https://github.com/swaggo/swag.git swag-${SWAG_VERSION} \	
-	&& cd swag-${SWAG_VERSION} \
-	&& git checkout -q v${SWAG_VERSION} \
-	&& make -s < /dev/null > /dev/null \
-	&& cp /tmp/swag-${SWAG_VERSION}/swag /usr/bin/swag \
-	&& rm -r /tmp/swag-${SWAG_VERSION}
+#RUN cd /tmp/ \
+#	&& git clone https://github.com/swaggo/swag.git swag-${SWAG_VERSION} \
+#	&& cd swag-${SWAG_VERSION} \
+#	&& git checkout -q v${SWAG_VERSION} \
+#	&& make -s < /dev/null > /dev/null \
+#	&& cp /tmp/swag-${SWAG_VERSION}/swag /usr/bin/swag \
+#	&& rm -r /tmp/swag-${SWAG_VERSION}
+
+
+RUN go install github.com/swaggo/swag/cmd/swag@v${SWAG_VERSION}
+
 
 RUN cd /tmp/ \
 	&& wget -nv https://github.com/AsamK/signal-cli/releases/download/v${SIGNAL_CLI_VERSION}/signal-cli-${SIGNAL_CLI_VERSION}.tar.gz -O /tmp/signal-cli.tar.gz \
@@ -140,7 +144,7 @@ COPY src/plugin_loader.go /tmp/signal-cli-rest-api-src/
 
 # build signal-cli-rest-api
 RUN ls -la /tmp/signal-cli-rest-api-src
-RUN cd /tmp/signal-cli-rest-api-src && swag init
+RUN cd /tmp/signal-cli-rest-api-src && ${GOPATH}/bin/swag init
 RUN cd /tmp/signal-cli-rest-api-src && go build -o signal-cli-rest-api main.go
 RUN cd /tmp/signal-cli-rest-api-src && go test ./client -v
 
