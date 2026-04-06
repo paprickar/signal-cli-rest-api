@@ -22,7 +22,7 @@ RUN dpkg-reconfigure debconf --frontend=noninteractive \
 	&& rm -rf /var/lib/apt/lists/*
 
 #COPY ext/libraries/libsignal-client/v${LIBSIGNAL_CLIENT_VERSION} /tmp/libsignal-client-libraries
-RUN wget https://github.com/bbernhard/libsignal-client-builds/releases/download/v${LIBSIGNAL_CLIENT_VERSION}/libsignal-client-build-v${LIBSIGNAL_CLIENT_VERSION}.tar.gz -O /tmp/libsignal-client.tar.gz
+RUN wget https://github.com/paprickar/libsignal-client-builds/releases/download/v${LIBSIGNAL_CLIENT_VERSION}/libsignal-client-build-v${LIBSIGNAL_CLIENT_VERSION}.tar.gz -O /tmp/libsignal-client.tar.gz
 RUN cd /tmp && mkdir -p /tmp/libsignal-client-libraries && tar xf libsignal-client.tar.gz && mv x86-64 armv7 arm64 -t libsignal-client-libraries
 
 # use architecture specific libsignal_jni.so
@@ -50,13 +50,13 @@ RUN cd /tmp/ \
 
 RUN if [ "$(uname -m)" = "x86_64" ]; then \
 		cd /tmp \
-		&& wget https://github.com/bbernhard/signal-cli-native-builds/releases/download/v${SIGNAL_CLI_VERSION}/signal-cli-native-v${SIGNAL_CLI_VERSION}.tar.gz \
+		&& wget https://github.com/paprickar/signal-cli-native-builds/releases/download/v${SIGNAL_CLI_VERSION}/signal-cli-native-v${SIGNAL_CLI_VERSION}.tar.gz \
 		&& tar xvf signal-cli-native-v${SIGNAL_CLI_VERSION}.tar.gz \
 		&& cp signal-cli-native-v${SIGNAL_CLI_VERSION}/x86-64/signal-cli-native /tmp/signal-cli-native \
 		&& chmod +x /tmp/signal-cli-native; \
 	elif [ "$(uname -m)" = "aarch64" ] ; then \
 		cd /tmp \
-		&& wget https://github.com/bbernhard/signal-cli-native-builds/releases/download/v${SIGNAL_CLI_VERSION}/signal-cli-native-v${SIGNAL_CLI_VERSION}.tar.gz \
+		&& wget https://github.com/paprickar/signal-cli-native-builds/releases/download/v${SIGNAL_CLI_VERSION}/signal-cli-native-v${SIGNAL_CLI_VERSION}.tar.gz \
 		&& tar xvf signal-cli-native-v${SIGNAL_CLI_VERSION}.tar.gz \
 		&& cp signal-cli-native-v${SIGNAL_CLI_VERSION}/arm64/signal-cli-native /tmp/signal-cli-native \
 		&& chmod +x /tmp/signal-cli-native; \
